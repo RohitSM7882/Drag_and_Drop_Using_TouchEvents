@@ -70,15 +70,23 @@ export default class NewClass extends cc.Component {
         this.initialPosition = this.getInitialPositions();
         var object;
         var obj;
+        var flag = 0;
         
         this.node.on(cc.Node.EventType.TOUCH_START,(event)=>{
+            if(flag != 0)
+                 event.preventDefault();
+            flag += 1;
             obj= this.getObject(this.node.convertTouchToNodeSpaceAR(event).x,this.node.convertTouchToNodeSpaceAR(event).y);
             object = obj[0];
+            object.opacity = 100;
             touch = true;
         })
 
         this.node.on(cc.Node.EventType.TOUCH_MOVE,(event)=>{
             if(!touch) 
+                return;
+            
+            if(flag != 1)
                 return;
 
             object.opacity = 100;
@@ -109,7 +117,7 @@ export default class NewClass extends cc.Component {
 
         this.node.on(cc.Node.EventType.TOUCH_END,(event)=>{
             touch = false;
-
+            flag = 0;
             var placeholder = this.getPlaceHolderSno(object.x,object.y);
             if(placeholder != 0){
                 var frameName = "frame" + placeholder.toString();
