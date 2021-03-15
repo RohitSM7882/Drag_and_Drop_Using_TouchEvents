@@ -46,7 +46,6 @@ export default class NewClass extends cc.Component {
     }
 
     getObject(x,y){
-        console.log('getobject==================',x,y);
         var cat = this.node.getChildByName('cat');
         var dog = this.node.getChildByName('dog');
         var fish = this.node.getChildByName('fish');
