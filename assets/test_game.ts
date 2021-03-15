@@ -31,9 +31,54 @@ export default class NewClass extends cc.Component {
                 [this.mouse.x,this.mouse.y]];
     }
 
-    getMovement(touch, object, sno){
+    getPlaceHolderSno(objectX,objectY){
+        var result = 0;
+        var flag = 0;
+        for(let i=1; i<5; i++){
+            var frameName = 'frame'+ i.toString()
+            var getPlaceHolderSno = this.node.getChildByName(frameName);
+            if(getPlaceHolderSno.getBoundingBox().contains(cc.v2(objectX,objectY))){
+                return i;
+            }
+        }
+        if(flag == 0)
+            return 0;
+    }
 
-        object.on(cc.Node.EventType.TOUCH_MOVE,(event)=>{
+    getObject(x,y){
+        console.log('getobject==================',x,y);
+        var cat = this.node.getChildByName('cat');
+        var dog = this.node.getChildByName('dog');
+        var fish = this.node.getChildByName('fish');
+        var mouse = this.node.getChildByName('mouse');
+
+        if(dog.getBoundingBox().contains(cc.v2(x,y))){
+            return [dog,2];
+        }
+        else if(cat.getBoundingBox().contains(cc.v2(x,y))){
+            return [cat,1];
+        }
+        else if(fish.getBoundingBox().contains(cc.v2(x,y))){
+            return [fish,3];
+        }
+        else if(mouse.getBoundingBox().contains(cc.v2(x,y))){
+            return [mouse,4];
+        }
+    }
+
+    onLoad () {
+        var touch = false;
+        this.initialPosition = this.getInitialPositions();
+        var object;
+        var obj;
+        
+        this.node.on(cc.Node.EventType.TOUCH_START,(event)=>{
+            obj= this.getObject(this.node.convertTouchToNodeSpaceAR(event).x,this.node.convertTouchToNodeSpaceAR(event).y);
+            object = obj[0];
+            touch = true;
+        })
+
+        this.node.on(cc.Node.EventType.TOUCH_MOVE,(event)=>{
             if(!touch) 
                 return;
 
@@ -63,7 +108,7 @@ export default class NewClass extends cc.Component {
             object.y = moveY;
         })
 
-        object.on(cc.Node.EventType.TOUCH_END, (event)=>{
+        this.node.on(cc.Node.EventType.TOUCH_END,(event)=>{
             touch = false;
 
             var placeholder = this.getPlaceHolderSno(object.x,object.y);
@@ -76,51 +121,13 @@ export default class NewClass extends cc.Component {
             }
             else{
                 cc.tween(object)
-                .to(0.5,{position: cc.v2(this.initialPosition[sno-1][0],this.initialPosition[sno-1][1])},{easing:'cubicInOut'})
+                .to(0.5,{position: cc.v2(this.initialPosition[obj[1]-1][0],this.initialPosition[obj[1]-1][1])},{easing:'cubicInOut'})
                 .start();
                 object.opacity = 255;
             }
             
         })
-    }
 
-    getPlaceHolderSno(objectX,objectY){
-        var result = 0;
-        var flag = 0;
-        for(let i=1; i<5; i++){
-            var frameName = 'frame'+ i.toString()
-            var getPlaceHolderSno = this.node.getChildByName(frameName);
-            if(getPlaceHolderSno.getBoundingBox().contains(cc.v2(objectX,objectY))){
-                return i;
-            }
-        }
-        if(flag == 0)
-            return 0;
-    }
-
-    onLoad () {
-        var touch = false;
-        this.initialPosition = this.getInitialPositions();
-
-        this.cat.on(cc.Node.EventType.TOUCH_START, (event)=>{
-            touch = true;
-            this.getMovement(touch,this.cat, 1);
-        });
-
-        this.dog.on(cc.Node.EventType.TOUCH_START, (event)=>{
-            touch = true;
-            this.getMovement(touch,this.dog, 2);
-        });
-
-        this.fish.on(cc.Node.EventType.TOUCH_START, (event)=>{
-            touch = true;
-            this.getMovement(touch,this.fish, 3);
-        });
-
-        this.mouse.on(cc.Node.EventType.TOUCH_START, (event)=>{
-            touch = true;
-            this.getMovement(touch,this.mouse, 4);
-        });
     }
 
     start () {
