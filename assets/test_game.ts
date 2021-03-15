@@ -73,12 +73,13 @@ export default class NewClass extends cc.Component {
         var flag = 0;
         
         this.node.on(cc.Node.EventType.TOUCH_START,(event)=>{
+            // console.log(flag,'--------');
             if(flag != 0)
-                 event.preventDefault();
+                return;
+            
             flag += 1;
             obj= this.getObject(this.node.convertTouchToNodeSpaceAR(event).x,this.node.convertTouchToNodeSpaceAR(event).y);
             object = obj[0];
-            object.opacity = 100;
             touch = true;
         })
 
