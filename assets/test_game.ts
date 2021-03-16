@@ -71,11 +71,13 @@ export default class NewClass extends cc.Component {
         var object;
         var obj;
         var flag = 0;
+        var touches = new Array(2);
         
         this.node.on(cc.Node.EventType.TOUCH_START,(event)=>{
             // console.log(flag,'--------');
+            touches.push(event);
             if(flag != 0)
-                return;
+                touches[1].stopPropagation();
             
             flag += 1;
             obj= this.getObject(this.node.convertTouchToNodeSpaceAR(event).x,this.node.convertTouchToNodeSpaceAR(event).y);
@@ -88,8 +90,9 @@ export default class NewClass extends cc.Component {
                 return;
             
             if(flag != 1)
-                return;
+                return false;
 
+            // console.log('movement==',flag);
             object.opacity = 100;
 
             let delta = event.getDelta();
@@ -117,6 +120,8 @@ export default class NewClass extends cc.Component {
         })
 
         this.node.on(cc.Node.EventType.TOUCH_END,(event)=>{
+            if(flag != 1)
+                return false;
             touch = false;
             flag = 0;
             var placeholder = this.getPlaceHolderSno(object.x,object.y);
