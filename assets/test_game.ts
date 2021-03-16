@@ -22,7 +22,8 @@ export default class NewClass extends cc.Component {
     mouse: cc.Node = null;
 
     @property
-    initialPosition = new Array(4);
+    initialPosition = new Array(6);
+    currentSprite = null;
 
     getInitialPositions(){
         return [[this.cat.x,this.cat.y],
@@ -45,100 +46,125 @@ export default class NewClass extends cc.Component {
             return 0;
     }
 
-    getObject(x,y){
-        var cat = this.node.getChildByName('cat');
-        var dog = this.node.getChildByName('dog');
-        var fish = this.node.getChildByName('fish');
-        var mouse = this.node.getChildByName('mouse');
+    getMovement(event,object, sprite){
 
-        if(dog.getBoundingBox().contains(cc.v2(x,y))){
-            return [dog,2];
+        if(sprite != object)
+            return;
+
+        object.opacity = 100;
+
+        let delta = event.getDelta();
+
+        let minX = -object.parent.width/2 + object.width/2;
+        let maxX = object.parent.width / 2 - object.width / 2;
+        let minY = -object.parent.height / 2 + object.height / 2;
+        let maxY = object.parent.height / 2 - object.height / 2;
+        let moveX = object.x + delta.x;
+        let moveY = object.y + delta.y;
+        
+        if(moveX < minX){
+            moveX = minX;
+        }else if(moveX > maxX){
+            moveX = maxX;
         }
-        else if(cat.getBoundingBox().contains(cc.v2(x,y))){
-            return [cat,1];
+        if(moveY < minY){
+            moveY = minY;
+        }else if(moveY > maxY){
+            moveY = maxY;
         }
-        else if(fish.getBoundingBox().contains(cc.v2(x,y))){
-            return [fish,3];
+
+        object.x = moveX;
+        object.y = moveY;
+    }
+
+    getTouchEnd(event,object,sno){
+        this.currentSprite = null;
+        var placeholder = this.getPlaceHolderSno(object.x,object.y);
+        if(placeholder != 0){
+            var frameName = "frame" + placeholder.toString();
+            var placeHolderSno = this.node.getChildByName(frameName);
+            object.x = placeHolderSno.x;
+            object.y = placeHolderSno.y;
+            object.opacity = 255;
         }
-        else if(mouse.getBoundingBox().contains(cc.v2(x,y))){
-            return [mouse,4];
+        else{
+            cc.tween(object)
+            .to(0.5,{position: cc.v2(this.initialPosition[sno-1][0],this.initialPosition[sno-1][1])},{easing:'cubicInOut'})
+            .start();
+            object.opacity = 255;
         }
     }
 
     onLoad () {
         var touch = false;
         this.initialPosition = this.getInitialPositions();
-        var object;
-        var obj;
-        var flag = 0;
-        var touches = new Array(2);
-        
-        this.node.on(cc.Node.EventType.TOUCH_START,(event)=>{
-            // console.log(flag,'--------');
-            touches.push(event);
-            if(flag != 0)
-                touches[1].stopPropagation();
-            
-            flag += 1;
-            obj= this.getObject(this.node.convertTouchToNodeSpaceAR(event).x,this.node.convertTouchToNodeSpaceAR(event).y);
-            object = obj[0];
+
+        this.cat.on(cc.Node.EventType.TOUCH_START, (event)=>{
             touch = true;
+            if(this.currentSprite == null)
+                this.currentSprite = this.cat;
         })
 
-        this.node.on(cc.Node.EventType.TOUCH_MOVE,(event)=>{
-            if(!touch) 
+        this.cat.on(cc.Node.EventType.TOUCH_MOVE, (event)=>{
+            if(!touch)
                 return;
-            
-            if(flag != 1)
-                return false;
-
-            // console.log('movement==',flag);
-            object.opacity = 100;
-
-            let delta = event.getDelta();
-
-            let minX = -object.parent.width/2 + object.width/2;
-            let maxX = object.parent.width / 2 - object.width / 2;
-            let minY = -object.parent.height / 2 + object.height / 2;
-            let maxY = object.parent.height / 2 - object.height / 2;
-            let moveX = object.x + delta.x;
-            let moveY = object.y + delta.y;
-            
-            if(moveX < minX){
-                moveX = minX;
-            }else if(moveX > maxX){
-                moveX = maxX;
-            }
-            if(moveY < minY){
-                moveY = minY;
-            }else if(moveY > maxY){
-                moveY = maxY;
-            }
-
-            object.x = moveX;
-            object.y = moveY;
+            this.getMovement(event,this.cat,this.currentSprite);
         })
 
-        this.node.on(cc.Node.EventType.TOUCH_END,(event)=>{
-            if(flag != 1)
-                return false;
+        this.cat.on(cc.Node.EventType.TOUCH_END, (event)=>{
             touch = false;
-            flag = 0;
-            var placeholder = this.getPlaceHolderSno(object.x,object.y);
-            if(placeholder != 0){
-                var frameName = "frame" + placeholder.toString();
-                var placeHolderSno = this.node.getChildByName(frameName);
-                object.x = placeHolderSno.x;
-                object.y = placeHolderSno.y;
-                object.opacity = 255;
-            }
-            else{
-                cc.tween(object)
-                .to(0.5,{position: cc.v2(this.initialPosition[obj[1]-1][0],this.initialPosition[obj[1]-1][1])},{easing:'cubicInOut'})
-                .start();
-                object.opacity = 255;
-            }
-            
+            this.getTouchEnd(event,this.cat,1);
+        })
+
+        this.dog.on(cc.Node.EventType.TOUCH_START, (event)=>{
+            touch = true;
+            if(this.currentSprite == null)
+                this.currentSprite = this.dog;
+        })
+
+        this.dog.on(cc.Node.EventType.TOUCH_MOVE, (event)=>{
+            if(!touch)
+                return;
+            this.getMovement(event,this.dog,this.currentSprite);
+        })
+
+        this.dog.on(cc.Node.EventType.TOUCH_END, (event)=>{
+            touch = false;
+            this.getTouchEnd(event,this.dog,2);
+        })
+
+        this.fish.on(cc.Node.EventType.TOUCH_START, (event)=>{
+            touch = true;
+            if(this.currentSprite == null)
+                this.currentSprite = this.fish;
+        })
+
+        this.fish.on(cc.Node.EventType.TOUCH_MOVE, (event)=>{
+            if(!touch)
+                return;
+            this.getMovement(event,this.fish,this.currentSprite);
+        })
+
+        this.fish.on(cc.Node.EventType.TOUCH_END, (event)=>{
+            touch = false;
+            this.getTouchEnd(event,this.fish,3);
+        })
+
+        this.mouse.on(cc.Node.EventType.TOUCH_START, (event)=>{
+            touch = true;
+            if(this.currentSprite == null)
+                this.currentSprite = this.mouse;
+        })
+
+        this.mouse.on(cc.Node.EventType.TOUCH_MOVE, (event)=>{
+            if(!touch)
+                return;
+            this.getMovement(event,this.mouse,this.currentSprite);
+        })
+
+        this.mouse.on(cc.Node.EventType.TOUCH_END, (event)=>{
+            touch = false;
+            this.getTouchEnd(event,this.mouse,4);
         })
 
     }
