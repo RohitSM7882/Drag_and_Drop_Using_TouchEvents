@@ -95,6 +95,13 @@ export default class NewClass extends cc.Component {
         }
     }
 
+    touchCancel(node,sno){
+        cc.tween(node)
+            .to(0.5,{position: cc.v2(this.initialPosition[sno-1][0],this.initialPosition[sno-1][1])},{easing:'cubicInOut'})
+            .start();
+            node.opacity = 255;
+    }
+
     onLoad () {
         var touch = false;
         this.initialPosition = this.getInitialPositions();
@@ -116,6 +123,11 @@ export default class NewClass extends cc.Component {
             this.getTouchEnd(event,this.cat,1);
         })
 
+        this.cat.on(cc.Node.EventType.TOUCH_CANCEL, (event)=>{
+            touch = false;
+            this.touchCancel(this.cat,1);
+        })
+
         this.dog.on(cc.Node.EventType.TOUCH_START, (event)=>{
             touch = true;
             if(this.currentSprite == null)
@@ -131,6 +143,11 @@ export default class NewClass extends cc.Component {
         this.dog.on(cc.Node.EventType.TOUCH_END, (event)=>{
             touch = false;
             this.getTouchEnd(event,this.dog,2);
+        })
+
+        this.dog.on(cc.Node.EventType.TOUCH_CANCEL, (event)=>{
+            touch = false;
+            this.touchCancel(this.dog,2);
         })
 
         this.fish.on(cc.Node.EventType.TOUCH_START, (event)=>{
@@ -150,6 +167,11 @@ export default class NewClass extends cc.Component {
             this.getTouchEnd(event,this.fish,3);
         })
 
+        this.fish.on(cc.Node.EventType.TOUCH_CANCEL, (event)=>{
+            touch = false;
+            this.touchCancel(this.fish,3);
+        })
+
         this.mouse.on(cc.Node.EventType.TOUCH_START, (event)=>{
             touch = true;
             if(this.currentSprite == null)
@@ -165,6 +187,11 @@ export default class NewClass extends cc.Component {
         this.mouse.on(cc.Node.EventType.TOUCH_END, (event)=>{
             touch = false;
             this.getTouchEnd(event,this.mouse,4);
+        })
+
+        this.mouse.on(cc.Node.EventType.TOUCH_CANCEL, (event)=>{
+            touch = false;
+            this.touchCancel(this.mouse,4);
         })
 
     }
